@@ -18,7 +18,7 @@ from src.maddpg_agent import MAgent
 
 def train(
     env,
-    max_sim_time=10,
+    max_sim_time=200,
     min_performance=0.5,
     num_episodes=10,
     window_size=100,
@@ -39,7 +39,7 @@ def train(
     critic_local_load_filename=[],
     actor_target_load_filename=[],
     critic_target_load_filename=[],
-    random_seed=12345,
+    random_seed=3454954985,
 ):
     """Train agents using MADDPG Agent.
 
@@ -145,6 +145,7 @@ def train(
             # exit loop if episode finished
             if np.any(dones):
                 break
+        print(sim_t)
         ttotal = time.time() - tstart
         # Append the scores
         scores.append(score)
