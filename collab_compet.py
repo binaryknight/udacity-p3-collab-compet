@@ -15,24 +15,32 @@ from unityagents import UnityEnvironment
 # Get the DDPG agent
 from src.maddpg_agent import MAgent
 
-def train(env,
-          max_sim_time=10,
-          min_performance=0.5,
-          num_episodes=10,
-          window_size=100,
-          actor_local_save_filename=['actor_local_weights_0.pt',
-                                     'actor_local_weights_1.pt'],
-          actor_target_save_filename=['actor_target_weights_0.pt',
-                                      'actor_target_weights_1.pt'],
-          critic_local_save_filename=['critic_local_weights_0.pt',
-                                      'critic_local_weights_1.pt'],
-          critic_target_save_filename=['critic_target_weights_0.pt',
-                                       'critic_target_weights_1.pt'],
-          actor_local_load_filename=[],
-          critic_local_load_filename=[],
-          actor_target_load_filename=[],
-          critic_target_load_filename=[],
-          random_seed=12345):
+
+def train(
+    env,
+    max_sim_time=10,
+    min_performance=0.5,
+    num_episodes=10,
+    window_size=100,
+    actor_local_save_filename=["actor_local_weights_0.pt", "actor_local_weights_1.pt"],
+    actor_target_save_filename=[
+        "actor_target_weights_0.pt",
+        "actor_target_weights_1.pt",
+    ],
+    critic_local_save_filename=[
+        "critic_local_weights_0.pt",
+        "critic_local_weights_1.pt",
+    ],
+    critic_target_save_filename=[
+        "critic_target_weights_0.pt",
+        "critic_target_weights_1.pt",
+    ],
+    actor_local_load_filename=[],
+    critic_local_load_filename=[],
+    actor_target_load_filename=[],
+    critic_target_load_filename=[],
+    random_seed=12345,
+):
     """Train agents using MADDPG Agent.
 
         Params
@@ -59,8 +67,8 @@ def train(env,
             actor_target_load_filename  : if given, the initial weights
                                           of the actor target NN for each agent
             critic_target_load_filename : if given, the initial weights
-                                          of the critic target  NN for each agent
-       """
+                                          of the critic target  NN for each
+                                         xagent"""
     # Environments contain **_brains_** which are responsible for deciding
     # the actions of their associated agents.
     # Here we check for the first brain available,
@@ -74,18 +82,21 @@ def train(env,
 
     # number of agents in the environment
     num_agents = len(env_info.agents)
-    print('Number of agents:', num_agents)
+    print("Number of agents:", num_agents)
     # number of actions
     action_size = brain.vector_action_space_size
-    print('Number of actions:', action_size)
+    print("Number of actions:", action_size)
     states = env_info.vector_observations
     state_size = states.shape[1]
-    print('States have length:', state_size)
+    print("States have length:", state_size)
 
     pdb.set_trace()
-    print('There are {} agents. Each observes a state with length: {}'.
-          format(num_agents, state_size))
-    print('The state for the first agent looks like:', states[0])
+    print(
+        "There are {} agents. Each observes a state with length: {}".format(
+            num_agents, state_size
+        )
+    )
+    print("The state for the first agent looks like:", states[0])
     # Create the agents
     agent = MAgent(state_size, action_size, num_agents, random_seed)
 
@@ -108,10 +119,11 @@ def train(env,
         # reset the environment
         env_info = env.reset(train_mode=True)[brain_name]
         # get the current state
+
         states = env_info.vector_observations
         tstart = time.time()
         for sim_t in range(max_sim_time):
-            print("""Simulation time: {}""".format(str(sim_t)), end='\r')
+            print("""Simulation time: {}""".format(str(sim_t)), end="\r")
             # select an action for each agent
             action = agent.act(states, add_noise=True)
             # Combine the actions and send it to the environment
@@ -125,12 +137,7 @@ def train(env,
             dones = env_info.local_done
 
             # update the replay buffer and train if necessary
-            agent.step(states,
-                       action,
-                       rewards,
-                       next_states,
-                       dones,
-                       sim_t)
+            agent.step(states, action, rewards, next_states, dones, sim_t)
             # update the score
             score += rewards
             # roll over the state to next time step
@@ -145,30 +152,45 @@ def train(env,
         max_moving_score = np.mean(scores_window)
         max_scores.append(max_moving_score)
         # Check if the minimum threshold for the reward has been achieved
-        if (e+1) % 1 == 0:
-            print("""Episode: {} Episode Duration: {:.0f}s min_score: {:.2f} max_score: {:.2f} moving_average_max_score: {:.2f}""".format(
-                (e+1), ttotal, float(np.min(score)), float(np.max(score)), float(max_moving_score)))
-        if max_moving_score >= min_performance and (e+1) > window_size:
-            print('\nEnvironment solved in {:d} episodes! \tMoving Average Max Score: {:.2f}'.format((e+1), float(max_moving_score)))
+        if (e + 1) % 1 == 0:
+            print(
+                """Episode: {} Episode Duration: {:.0f}s min_score: {:.2f} max_score: {:.2f} moving_average_max_score: {:.2f}""".format(
+                    (e + 1),
+                    ttotal,
+                    float(np.min(score)),
+                    float(np.max(score)),
+                    float(max_moving_score),
+                )
+            )
+        if max_moving_score >= min_performance and (e + 1) > window_size:
+            print(
+                "\nEnvironment solved in {:d} episodes! \tMoving Average Max Score: {:.2f}".format(
+                    (e + 1), float(max_moving_score)
+                )
+            )
             break
 
-        agent.save(actor_local_save_filename,
-                   actor_target_save_filename,
-                   critic_local_save_filename,
-                   critic_target_save_filename)
+    agent.save(
+        actor_local_save_filename,
+        actor_target_save_filename,
+        critic_local_save_filename,
+        critic_target_save_filename,
+    )
 
     # Save the scores in case of any issues
-    with open('training_results.pkl', 'wb') as f:
+    with open("training_results.pkl", "wb") as f:
         pickle.dump([e, max_scores, scores], f)
 
     # When finished, you can close the environment.
-    return(e, max_scores, scores)
+    return (e, max_scores, scores)
 
 
-def run(env,
-        num_episodes=1,
-        sim_max_time=1000,
-        actor_local_load_filename='actor_local_weights.pt'):
+def run(
+    env,
+    num_episodes=1,
+    sim_max_time=1000,
+    actor_local_load_filename="actor_local_weights.pt",
+):
     """
         Params
         ======
@@ -223,13 +245,13 @@ def run(env,
 
         # Append the scores
         scores.append(score)
-        return(scores)
+        return scores
 
 
 def main():
     # Load the unity app
     env = UnityEnvironment(file_name="Tennis.app")
-    num_episodes,  moving_max_scores, scores = train(env, num_episodes=2500)
+    num_episodes, moving_max_scores, scores = train(env, num_episodes=2500)
     print("Done training")
 
     # Plot the training scores
@@ -239,13 +261,13 @@ def main():
     _ = fig.add_subplot(111)
     plt.plot(np.arange(len(max_scores)), max_scores)
     plt.plot(np.arange(len(moving_max_scores)), moving_max_scores)
-    plt.ylabel('Max and Moving Average of Max Scores ')
-    plt.xlabel('Episode #')
-    plt.legend(['Max Score', 'Moving Average of Max Score'], loc='upper left')
+    plt.ylabel("Max and Moving Average of Max Scores ")
+    plt.xlabel("Episode #")
+    plt.legend(["Max Score", "Moving Average of Max Score"], loc="upper left")
     plt.show()
 
-    scores = run(env,
-                 num_episodes=1,
-                 actor_local_load_filename='actor_local_weights.pt')
+    scores = run(
+        env, num_episodes=1, actor_local_load_filename="actor_local_weights.pt"
+    )
     print("Done simulating")
     env.close()

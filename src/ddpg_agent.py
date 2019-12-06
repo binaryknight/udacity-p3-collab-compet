@@ -11,31 +11,34 @@ import torch.nn.functional as F
 import torch.optim as optim
 
 BUFFER_SIZE = int(1e6)  # replay buffer size
-BATCH_SIZE = 2          # minibatch size
-GAMMA = 0.99            # discount factor
-TAU = 1e-3              # for soft update of target parameters
-LR_ACTOR = 1e-4         # learning rate of the actor
-LR_CRITIC = 1e-4        # learning rate of the critic
-WEIGHT_DECAY = 0.0      # L2 weight decay
+BATCH_SIZE = 256  # minibatch size
+GAMMA = 0.99  # discount factor
+TAU = 1e-3  # for soft update of target parameters
+LR_ACTOR = 1e-4  # learning rate of the actor
+LR_CRITIC = 1e-4  # learning rate of the critic
+WEIGHT_DECAY = 0.0  # L2 weight decay
 UPDATE_EVERY = 1
 NUM_UPDATES = 5
 EPSILON = 1.0
 EPSILON_DECAY = 0.9999
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
-class Agent():
+
+class Agent:
     """Interacts with and learns from the environment."""
 
-    def __init__(self,
-                 state_size,
-                 action_size,
-                 observed_state_size,
-                 observed_action_size,
-                 random_seed,
-                 actor_local_load_filename=None,
-                 actor_target_load_filename=None,
-                 critic_local_load_filename=None,
-                 critic_target_load_filename=None):
+    def __init__(
+        self,
+        state_size,
+        action_size,
+        observed_state_size,
+        observed_action_size,
+        random_seed,
+        actor_local_load_filename=None,
+        actor_target_load_filename=None,
+        critic_local_load_filename=None,
+        critic_target_load_filename=None,
+    ):
         """Initialize an Agent object.
 
         Params
@@ -57,20 +60,20 @@ class Agent():
         self.seed = random.seed(random_seed)
 
         # Actor Network (w/ Target Network)
-        self.actor_local = Actor(
-            state_size, action_size, random_seed).to(device)
-        self.actor_target = Actor(
-            state_size, action_size, random_seed).to(device)
-        self.actor_optimizer = optim.Adam(
-            self.actor_local.parameters(), lr=LR_ACTOR)
+        self.actor_local = Actor(state_size, action_size, random_seed).to(device)
+        self.actor_target = Actor(state_size, action_size, random_seed).to(device)
+        self.actor_optimizer = optim.Adam(self.actor_local.parameters(), lr=LR_ACTOR)
 
         # Critic Network (w/ Target Network)
         self.critic_local = Critic(
-            observed_state_size, observed_action_size, random_seed).to(device)
+            observed_state_size, observed_action_size, random_seed
+        ).to(device)
         self.critic_target = Critic(
-            observed_state_size, observed_action_size, random_seed).to(device)
-        self.critic_optimizer = optim.Adam(self.critic_local.parameters(),
-                                           lr=LR_CRITIC, weight_decay=WEIGHT_DECAY)
+            observed_state_size, observed_action_size, random_seed
+        ).to(device)
+        self.critic_optimizer = optim.Adam(
+            self.critic_local.parameters(), lr=LR_CRITIC, weight_decay=WEIGHT_DECAY
+        )
 
         # Noise process
         self.noise = OUNoise(action_size, random_seed)
@@ -93,7 +96,7 @@ class Agent():
         self.actor_local.train()
         if add_noise:
             self.epsilon = self.epsilon_decay * self.epsilon
-            action += (self.epsilon * self.noise.sample())
+            action += self.epsilon * self.noise.sample()
         return np.clip(action, -1, 1)
 
     def reset(self):
@@ -101,7 +104,7 @@ class Agent():
 
     def learn(self, experiences, gamma):
         pass
-    
+
     def soft_update(self, local_model, target_model, tau):
         """Soft update model parameters.
         θ_target = τ*θ_local + (1 - τ)*θ_target
@@ -112,47 +115,46 @@ class Agent():
             target_model: PyTorch model (weights will be copied to)
             tau (float): interpolation parameter
         """
-        for target_param, local_param in zip(target_model.parameters(), local_model.parameters()):
+        for target_param, local_param in zip(
+            target_model.parameters(), local_model.parameters()
+        ):
             target_param.data.copy_(
-                tau*local_param.data + (1.0-tau)*target_param.data)
+                tau * local_param.data + (1.0 - tau) * target_param.data
+            )
 
-    def save(self,
-             actor_local_save_filename,
-             actor_target_save_filename,
-             critic_local_save_filename,
-             critic_target_save_filename):
-        torch.save(self.actor_local.state_dict(),
-                   actor_local_save_filename)
-        torch.save(self.actor_target.state_dict(),
-                   actor_target_save_filename)
-        torch.save(self.critic_local.state_dict(),
-                   critic_local_save_filename)
-        torch.save(self.critic_target.state_dict(),
-                   critic_target_save_filename)
+    def save(
+        self,
+        actor_local_save_filename,
+        actor_target_save_filename,
+        critic_local_save_filename,
+        critic_target_save_filename,
+    ):
+        torch.save(self.actor_local.state_dict(), actor_local_save_filename)
+        torch.save(self.actor_target.state_dict(), actor_target_save_filename)
+        torch.save(self.critic_local.state_dict(), critic_local_save_filename)
+        torch.save(self.critic_target.state_dict(), critic_target_save_filename)
 
-    def load(self,
-             actor_local_load_filename,
-             actor_target_load_filename=None,
-             critic_local_load_filename=None,
-             critic_target_load_filename=None):
+    def load(
+        self,
+        actor_local_load_filename,
+        actor_target_load_filename=None,
+        critic_local_load_filename=None,
+        critic_target_load_filename=None,
+    ):
         if actor_local_load_filename is not None:
-            self.actor_local.load_state_dict(
-                torch.load(actor_local_load_filename))
+            self.actor_local.load_state_dict(torch.load(actor_local_load_filename))
         if actor_target_load_filename is not None:
-            self.actor_target.load_state_dict(
-                torch.load(actor_target_load_filename))
+            self.actor_target.load_state_dict(torch.load(actor_target_load_filename))
         if critic_local_load_filename is not None:
-            self.critic_local.load_state_dict(
-                torch.load(critic_local_load_filename))
+            self.critic_local.load_state_dict(torch.load(critic_local_load_filename))
         if critic_target_load_filename is not None:
-            self.critic_target.load_state_dict(
-                torch.load(critic_target_load_filename))
+            self.critic_target.load_state_dict(torch.load(critic_target_load_filename))
 
 
 class OUNoise:
     """Ornstein-Uhlenbeck process."""
 
-    def __init__(self, size, seed, mu=0., theta=0.15, sigma=0.2):
+    def __init__(self, size, seed, mu=0.0, theta=0.15, sigma=0.2):
         """Initialize parameters and noise process."""
         self.mu = mu * np.ones(size)
         self.theta = theta
@@ -167,8 +169,9 @@ class OUNoise:
     def sample(self):
         """Update internal state and return it as a noise sample."""
         x = self.state
-        dx = self.theta * (self.mu - x) + self.sigma * \
-            np.array([random.random() for i in range(len(x))])
+        dx = self.theta * (self.mu - x) + self.sigma * np.array(
+            [random.random() for i in range(len(x))]
+        )
         self.state = x + dx
         return self.state
 
@@ -185,42 +188,115 @@ class ReplayBuffer:
         """
         self.memory = deque(maxlen=buffer_size)  # internal memory (deque)
         self.batch_size = batch_size
-        self.experience = namedtuple("Experience", field_names=[
-            "state", "action", "reward",
-            "next_state", "done",
-            "observations", "observed_actions", "next_observations"])
+        self.experience = namedtuple(
+            "Experience",
+            field_names=[
+                "state",
+                "action",
+                "reward",
+                "next_state",
+                "done",
+                "observations",
+                "observed_actions",
+                "next_observations",
+            ],
+        )
         self.seed = random.seed(seed)
 
-    def add(self, state, action, reward, next_state, done,
-            observations, observed_actions, next_observations):
+    def add(
+        self,
+        state,
+        action,
+        reward,
+        next_state,
+        done,
+        observations,
+        observed_actions,
+        next_observations,
+    ):
         """Add a new experience to memory."""
-        e = self.experience(state, action, reward,
-                            next_state, done,
-                            observations, observed_actions, next_observations)
+        e = self.experience(
+            state,
+            action,
+            reward,
+            next_state,
+            done,
+            observations,
+            observed_actions,
+            next_observations,
+        )
         self.memory.append(e)
 
     def sample(self):
         """Randomly sample a batch of experiences from memory."""
         experiences = random.sample(self.memory, k=self.batch_size)
 
-        states = torch.from_numpy(
-            np.vstack([e.state for e in experiences if e is not None])).float().to(device)
-        actions = torch.from_numpy(
-            np.vstack([e.action for e in experiences if e is not None])).float().to(device)
-        rewards = torch.from_numpy(
-            np.vstack([e.reward for e in experiences if e is not None])).float().to(device)
-        next_states = torch.from_numpy(np.vstack(
-            [e.next_state for e in experiences if e is not None])).float().to(device)
-        observations = torch.from_numpy(np.vstack(
-            [e.observations for e in experiences if e is not None])).float().to(device)
-        observed_actions = torch.from_numpy(np.vstack(
-            [e.observed_actions for e in experiences if e is not None])).float().to(device)
-        next_observations = torch.from_numpy(np.vstack(
-            [e.next_observations for e in experiences if e is not None])).float().to(device)
-        dones = torch.from_numpy(np.vstack(
-            [e.done for e in experiences if e is not None]).astype(np.uint8)).float().to(device)
-        return (states, actions, rewards, next_states, dones,
-                observations, observed_actions, next_observations)
+        states = (
+            torch.from_numpy(np.vstack([e.state for e in experiences if e is not None]))
+            .float()
+            .to(device)
+        )
+        actions = (
+            torch.from_numpy(
+                np.vstack([e.action for e in experiences if e is not None])
+            )
+            .float()
+            .to(device)
+        )
+        rewards = (
+            torch.from_numpy(
+                np.vstack([e.reward for e in experiences if e is not None])
+            )
+            .float()
+            .to(device)
+        )
+        next_states = (
+            torch.from_numpy(
+                np.vstack([e.next_state for e in experiences if e is not None])
+            )
+            .float()
+            .to(device)
+        )
+        observations = (
+            torch.from_numpy(
+                np.vstack([e.observations for e in experiences if e is not None])
+            )
+            .float()
+            .to(device)
+        )
+        observed_actions = (
+            torch.from_numpy(
+                np.vstack([e.observed_actions for e in experiences if e is not None])
+            )
+            .float()
+            .to(device)
+        )
+        next_observations = (
+            torch.from_numpy(
+                np.vstack([e.next_observations for e in experiences if e is not None])
+            )
+            .float()
+            .to(device)
+        )
+        dones = (
+            torch.from_numpy(
+                np.vstack([e.done for e in experiences if e is not None]).astype(
+                    np.uint8
+                )
+            )
+            .float()
+            .to(device)
+        )
+        return (
+            states,
+            actions,
+            rewards,
+            next_states,
+            dones,
+            observations,
+            observed_actions,
+            next_observations,
+        )
 
     def __len__(self):
         """Return the current size of internal memory."""
