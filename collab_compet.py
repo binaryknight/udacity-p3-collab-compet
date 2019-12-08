@@ -18,7 +18,7 @@ from src.maddpg_agent import MAgent
 
 def train(
     env,
-    max_sim_time=200,
+    max_sim_time=10000,
     min_performance=0.5,
     num_episodes=10,
     window_size=100,
@@ -145,7 +145,6 @@ def train(
             # exit loop if episode finished
             if np.any(dones):
                 break
-        print(sim_t)
         ttotal = time.time() - tstart
         # Append the scores
         scores.append(score)
@@ -155,14 +154,16 @@ def train(
         # Check if the minimum threshold for the reward has been achieved
         if (e + 1) % 1 == 0:
             print(
-                """Episode: {} Episode Duration: {:.0f}s min_score: {:.2f} max_score: {:.2f} moving_average_max_score: {:.2f}""".format(
-                    (e + 1),
-                    ttotal,
-                    float(np.min(score)),
-                    float(np.max(score)),
-                    float(max_moving_score),
+                """Episode: {} Duration: {:.0f}s Sim Duration {:.0f}s""".format(
+                    (e + 1), ttotal, sim_t
                 )
             )
+            print(
+                """min_score: {:.2f} max_score: {:.2f} ma_max_score: {:.2f}""".format(
+                    float(np.min(score)), float(np.max(score)), float(max_moving_score)
+                )
+            )
+
         if max_moving_score >= min_performance and (e + 1) > window_size:
             print(
                 "\nEnvironment solved in {:d} episodes! \tMoving Average Max Score: {:.2f}".format(
