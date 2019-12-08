@@ -7,14 +7,16 @@ import torch.nn.functional as F
 
 def hidden_init(layer):
     fan_in = layer.weight.data.size()[0]
-    lim = 1. / np.sqrt(fan_in)
+    lim = 1.0 / np.sqrt(fan_in)
     return (-lim, lim)
 
 
 class Actor(nn.Module):
     """Actor (Policy) Model."""
 
-    def __init__(self, state_size, action_size, seed, fc1_units=512, fc2_units=512):
+    def __init__(
+        self, state_size, action_size, seed, fc1_units=512, fc2_units=512
+    ):
         """Initialize parameters and build model.
         Params
         ======
@@ -48,8 +50,9 @@ class Actor(nn.Module):
 class Critic(nn.Module):
     """Critic (Value) Model."""
 
-    def __init__(self, state_size, action_size, seed, fcs1_units=512,
-                 fc2_units=512):
+    def __init__(
+        self, state_size, action_size, seed, fcs1_units=512, fc2_units=512
+    ):
         """Initialize parameters and build model.
         Params
         ======
@@ -63,7 +66,7 @@ class Critic(nn.Module):
         self.seed = torch.manual_seed(seed)
         self.fcs1 = nn.Linear(state_size, fcs1_units)
         self.bn1 = nn.BatchNorm1d(fcs1_units)
-        self.fc2 = nn.Linear(fcs1_units+action_size, fc2_units)
+        self.fc2 = nn.Linear(fcs1_units + action_size, fc2_units)
         self.fc3 = nn.Linear(fc2_units, 1)
         self.reset_parameters()
 

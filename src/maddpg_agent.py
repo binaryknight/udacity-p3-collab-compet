@@ -1,28 +1,12 @@
 import numpy as np
 import random
-import copy
-import pdb
-from collections import namedtuple, deque
-
-from src.model import Actor, Critic
 from src.ddpg_agent import Agent
 
 import torch
 import torch.nn.functional as F
-import torch.optim as optim
 
+import config as cfg
 
-BUFFER_SIZE = int(1e6)  # replay buffer size
-BATCH_SIZE = 256  # minibatch size
-GAMMA = 0.99  # discount factor
-TAU = 1e-3  # for soft update of target parameters
-LR_ACTOR = 1e-4  # learning rate of the actor
-LR_CRITIC = 1e-4  # learning rate of the critic
-WEIGHT_DECAY = 0.0  # L2 weight decay
-UPDATE_EVERY = 1
-NUM_UPDATES = 5
-EPSILON = 1.0
-EPSILON_DECAY = 0.9999
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 
@@ -35,10 +19,10 @@ class MAgent:
         action_size,
         num_agents,
         random_seed,
-        actor_local_load_filename=[],
-        actor_target_load_filename=[],
-        critic_local_load_filename=[],
-        critic_target_load_filename=[],
+        actor_local_load_filenames=[],
+        actor_target_load_filenames=[],
+        critic_local_load_filenames=[],
+        critic_target_load_filenames=[],
     ):
         """Initialize an Agent object.
 
@@ -47,10 +31,14 @@ class MAgent:
             state_size (int): dimension of each state
             action_size (int): dimension of each action
             random_seed (int): random seed
-            actor_local_load_filename   : if given, the initial weights of the local  NN
-            critic_local_load_filename  : if given, the initial weights if the target NN
-            actor_target_load_filename  : if given, the initial weights of the local  NN
-            critic_target_load_filename : if given, the initial weights if the target NN
+            actor_local_load_filenames   : if given, the initial weights
+                                           of the local NN
+            critic_local_load_filenames  : if given, the initial weights
+                                           of the target NN
+            actor_target_load_filenames  : if given, the initial weights
+                                           of the local  NN
+            critic_target_load_filenames : if given, the initial weights
+                                           of the target NN
         """
         self.num_agents = num_agents
         self.state_size = state_size
@@ -62,12 +50,37 @@ class MAgent:
 
         # We need generate the DDPG agents
         for idx in range(self.num_agents):
+            actor_local_load_filename = (
+                actor_local_load_filenames[idx]
+                if len(actor_local_load_filenames) == (idx + 1)
+                else None
+            )
+            actor_target_load_filename = (
+                actor_target_load_filenames[idx]
+                if len(actor_target_load_filenames) == (idx + 1)
+                else None
+            )
+            critic_target_load_filename = (
+                critic_target_load_filenames[idx]
+                if len(critic_target_load_filenames) == (idx + 1)
+                else None
+            )
+            critic_local_load_filename = (
+                critic_local_load_filenames[idx]
+                if len(critic_local_load_filenames) == (idx + 1)
+                else None
+            )
+
             agent = Agent(
                 self.state_size,
                 self.action_size,
                 self.observed_state_size,
                 self.observed_action_size,
                 random_seed,
+                actor_local_load_filename,
+                actor_target_load_filename,
+                critic_local_load_filename,
+                critic_target_load_filename,
             )
             self.agents.append(agent)
 
@@ -86,13 +99,13 @@ class MAgent:
                 next_states,
             )
 
-            agent.t_step = agent.t_step % UPDATE_EVERY
-            if agent.t_step == 0 and len(agent.memory) > BATCH_SIZE:
-                for _ in range(NUM_UPDATES):
+            agent.t_step = agent.t_step % cfg.UPDATE_EVERY
+            if agent.t_step == 0 and len(agent.memory) > cfg.BATCH_SIZE:
+                for _ in range(cfg.NUM_UPDATES):
                     # Sample the memory of the agent
-                    experiences = agent.memory.sample()
+                    experiences = agent.memory.sample(cfg.BATCH_SIZE)
                     # Learning involves knowing the actor of all agents
-                    self.learn(experiences, GAMMA, agent)
+                    self.learn(experiences, cfg.GAMMA, agent)
 
     def act(self, state, add_noise=True):
         actions_list = []
@@ -120,7 +133,7 @@ class MAgent:
         observations_list = []
 
         for idx, agent in enumerate(self.agents):
-            x = np.arange(idx, (BATCH_SIZE * self.num_agents), self.num_agents)
+            x = np.arange(idx, (cfg.BATCH_SIZE * self.num_agents), self.num_agents)
             actions_next_list.append(agent.actor_target(next_observations[x]))
             observed_actions_list.append(observed_actions[x])
             observations_next_list.append(next_observations[x])
@@ -146,7 +159,7 @@ class MAgent:
         # Compute actor loss
         actions_pred_list = []
         for idx, agent in enumerate(self.agents):
-            x = np.arange(idx, (BATCH_SIZE * self.num_agents), self.num_agents)
+            x = np.arange(idx, (cfg.BATCH_SIZE * self.num_agents), self.num_agents)
             actions_pred_list.append(agent.actor_local(observations[x]))
 
         actions_pred = torch.cat(actions_pred_list, dim=1)
@@ -158,12 +171,23 @@ class MAgent:
 
         # ----------------------- update target networks ---------------------#
         train_agent.soft_update(
-            train_agent.critic_local, train_agent.critic_target, TAU
+            train_agent.critic_local, train_agent.critic_target, cfg.TAU
         )
-        train_agent.soft_update(train_agent.actor_local, train_agent.actor_target, TAU)
+        train_agent.soft_update(
+            train_agent.actor_local, train_agent.actor_target, cfg.TAU
+        )
 
-    def save(self):
-        pass
-
-    def load(self):
-        pass
+    def save(
+        self,
+        actor_local_save_filenames,
+        actor_target_save_filenames,
+        critic_local_save_filenames,
+        critic_target_save_filenames,
+    ):
+        for idx, agent in enumerate(self.agents):
+            agent.save(
+                actor_local_save_filenames[idx],
+                actor_target_save_filenames[idx],
+                critic_local_save_filenames[idx],
+                critic_target_save_filenames[idx],
+            )

@@ -1,26 +1,16 @@
 import numpy as np
 import random
 import copy
-import pdb
 from collections import namedtuple, deque
 
 from src.model import Actor, Critic
 
 import torch
-import torch.nn.functional as F
 import torch.optim as optim
 
-BUFFER_SIZE = int(1e6)  # replay buffer size
-BATCH_SIZE = 256  # minibatch size
-GAMMA = 0.99  # discount factor
-TAU = 1e-3  # for soft update of target parameters
-LR_ACTOR = 1e-4  # learning rate of the actor
-LR_CRITIC = 1e-4  # learning rate of the critic
-WEIGHT_DECAY = 0.0  # L2 weight decay
-UPDATE_EVERY = 1
-NUM_UPDATES = 5
-EPSILON = 1.0
-EPSILON_DECAY = 0.9999
+# Get the configuration parameters
+import config as cfg
+
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 
@@ -62,7 +52,9 @@ class Agent:
         # Actor Network (w/ Target Network)
         self.actor_local = Actor(state_size, action_size, random_seed).to(device)
         self.actor_target = Actor(state_size, action_size, random_seed).to(device)
-        self.actor_optimizer = optim.Adam(self.actor_local.parameters(), lr=LR_ACTOR)
+        self.actor_optimizer = optim.Adam(
+            self.actor_local.parameters(), lr=cfg.LR_ACTOR
+        )
 
         # Critic Network (w/ Target Network)
         self.critic_local = Critic(
@@ -71,18 +63,27 @@ class Agent:
         self.critic_target = Critic(
             observed_state_size, observed_action_size, random_seed
         ).to(device)
+
         self.critic_optimizer = optim.Adam(
-            self.critic_local.parameters(), lr=LR_CRITIC, weight_decay=WEIGHT_DECAY
+            self.critic_local.parameters(),
+            lr=cfg.LR_CRITIC,
+            weight_decay=cfg.WEIGHT_DECAY,
+        )
+        self.load(
+            actor_local_load_filename,
+            actor_target_load_filename,
+            critic_local_load_filename,
+            critic_target_load_filename,
         )
 
         # Noise process
         self.noise = OUNoise(action_size, random_seed)
 
         # Replay memory
-        self.memory = ReplayBuffer(BUFFER_SIZE, BATCH_SIZE, random_seed)
+        self.memory = ReplayBuffer(cfg.BUFFER_SIZE, cfg.BATCH_SIZE, random_seed)
         self.t_step = 0
-        self.epsilon = EPSILON
-        self.epsilon_decay = EPSILON_DECAY
+        self.epsilon = cfg.EPSILON
+        self.epsilon_decay = cfg.EPSILON_DECAY
 
     def step(self, states, actions, rewards, next_states, dones, t_step):
         pass
@@ -227,7 +228,7 @@ class ReplayBuffer:
         )
         self.memory.append(e)
 
-    def sample(self):
+    def sample(self, batch_):
         """Randomly sample a batch of experiences from memory."""
         experiences = random.sample(self.memory, k=self.batch_size)
 

@@ -2,7 +2,6 @@
 # coding: utf-8
 # author
 
-import pdb
 import numpy as np
 import matplotlib.pyplot as plt
 import time
@@ -22,23 +21,26 @@ def train(
     min_performance=0.5,
     num_episodes=10,
     window_size=100,
-    actor_local_save_filename=["actor_local_weights_0.pt", "actor_local_weights_1.pt"],
-    actor_target_save_filename=[
+    actor_local_save_filenames=[
+        "actor_local_weights_0.pt",
+        "actor_local_weights_1.pt",
+    ],
+    actor_target_save_filenames=[
         "actor_target_weights_0.pt",
         "actor_target_weights_1.pt",
     ],
-    critic_local_save_filename=[
+    critic_local_save_filenames=[
         "critic_local_weights_0.pt",
         "critic_local_weights_1.pt",
     ],
-    critic_target_save_filename=[
+    critic_target_save_filenames=[
         "critic_target_weights_0.pt",
         "critic_target_weights_1.pt",
     ],
-    actor_local_load_filename=[],
-    critic_local_load_filename=[],
-    actor_target_load_filename=[],
-    critic_target_load_filename=[],
+    actor_local_load_filenames=[],
+    critic_local_load_filenames=[],
+    actor_target_load_filenames=[],
+    critic_target_load_filenames=[],
     random_seed=3454954985,
 ):
     """Train agents using MADDPG Agent.
@@ -52,23 +54,23 @@ def train(
                                           training the agent
             window_size (int)           : the length of the running average
                                           window to compute the average score
-            actor_local_save_filename   : the file where the local NN weights
+            actor_local_save_filenames  : the file where the local NN weights
                                           will be saved for each agent
-            critic_local_save_filename  : the file where the target NN weights
+            critic_local_save_filenames : the file where the target NN weights
                                           will be saved for each agent
-            actor_target_save_filename  : the file where the local NN weights
+            actor_target_save_filenames : the file where the local NN weights
                                           will be saved for each agent
-            critic_target_save_filename : the file where the target NN weights
+            critic_target_save_filenames: the file where the target NN weights
                                           will be saved for each agent
-            actor_local_load_filename   : if given, the initial weights
+            actor_local_load_filenames  : if given, the initial weights
                                           of the actor local NN for each agent
-            critic_local_load_filename  : if given, the initial weights
+            critic_local_load_filenames : if given, the initial weights
                                           of the critic local NN for each agent
-            actor_target_load_filename  : if given, the initial weights
+            actor_target_load_filenames : if given, the initial weights
                                           of the actor target NN for each agent
-            critic_target_load_filename : if given, the initial weights
+            critic_target_load_filenames: if given, the initial weights
                                           of the critic target  NN for each
-                                         xagent"""
+                                          agent"""
     # Environments contain **_brains_** which are responsible for deciding
     # the actions of their associated agents.
     # Here we check for the first brain available,
@@ -89,8 +91,6 @@ def train(
     states = env_info.vector_observations
     state_size = states.shape[1]
     print("States have length:", state_size)
-
-    pdb.set_trace()
     print(
         "There are {} agents. Each observes a state with length: {}".format(
             num_agents, state_size
@@ -99,12 +99,6 @@ def train(
     print("The state for the first agent looks like:", states[0])
     # Create the agents
     agent = MAgent(state_size, action_size, num_agents, random_seed)
-
-    # Load weights if they exist
-    # agent.load(actor_local_load_filename,
-    #           actor_target_load_filename,
-    #           critic_local_load_filename,
-    #           critic_target_load_filename)
 
     # Loop over number of episodes
     # Storage for scores
@@ -154,13 +148,13 @@ def train(
         # Check if the minimum threshold for the reward has been achieved
         if (e + 1) % 1 == 0:
             print(
-                """Episode: {} Duration: {:.0f}s Sim Duration {:.0f}s""".format(
+                """Episode:{} Duration: {:.0f}s Sim Duration {:.0f}s""".format(
                     (e + 1), ttotal, sim_t
                 )
             )
             print(
-                """min_score: {:.2f} max_score: {:.2f} ma_max_score: {:.2f}""".format(
-                    float(np.min(score)), float(np.max(score)), float(max_moving_score)
+                """min_score:{:.2f} max_score:{:.2f} ma_max_score:{:.2f}""".format(
+                    float(np.min(score)), float(np.max(score)), float(max_moving_score),
                 )
             )
 
@@ -173,10 +167,10 @@ def train(
             break
 
     agent.save(
-        actor_local_save_filename,
-        actor_target_save_filename,
-        critic_local_save_filename,
-        critic_target_save_filename,
+        actor_local_save_filenames,
+        actor_target_save_filenames,
+        critic_local_save_filenames,
+        critic_target_save_filenames,
     )
 
     # Save the scores in case of any issues
@@ -190,8 +184,12 @@ def train(
 def run(
     env,
     num_episodes=1,
-    sim_max_time=1000,
-    actor_local_load_filename="actor_local_weights.pt",
+    sim_max_time=10000,
+    actor_local_load_filenames=[
+        "actor_local_weights_0.pt",
+        "actor_local_weights_1.pt",
+    ],
+    random_seed=5980,
 ):
     """
         Params
@@ -200,8 +198,9 @@ def run(
             num_episodes(int)           : number of episodes to use
                                           to evaluate the agent
             sim_max_time                : maximum time steps in an episode
-            actore_local_load_filename  : the file that contains
-                                          the weights of the actor NN
+            actore_local_load_filenames : the file that contains
+                                          the weights of the actor NNs
+                                          for the agents
         """
     # Environment Setup
     brain_name = env.brain_names[0]
@@ -214,9 +213,10 @@ def run(
     # Get the state space information
     states = env_info.vector_observations
     state_size = states.shape[1]
-    # Create the agent with the trained weights
-    agent = MAgent(state_size, action_size, num_agents, 12345)
-    agent.load(actor_local_load_filename)
+    # Create tHe agent with the trained weights
+    agent = MAgent(
+        state_size, action_size, num_agents, random_seed, actor_local_load_filenames,
+    )
 
     # Create the scores storage
     scores = []
@@ -253,7 +253,7 @@ def run(
 def main():
     # Load the unity app
     env = UnityEnvironment(file_name="Tennis.app")
-    num_episodes, moving_max_scores, scores = train(env, num_episodes=2500)
+    num_episodes, moving_max_scores, scores = train(env, num_episodes=2)
     print("Done training")
 
     # Plot the training scores
@@ -268,8 +268,6 @@ def main():
     plt.legend(["Max Score", "Moving Average of Max Score"], loc="upper left")
     plt.show()
 
-    scores = run(
-        env, num_episodes=1, actor_local_load_filename="actor_local_weights.pt"
-    )
+    scores = run(env, num_episodes=1)
     print("Done simulating")
     env.close()
