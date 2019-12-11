@@ -5,7 +5,7 @@ from src.ddpg_agent import Agent
 import torch
 import torch.nn.functional as F
 
-import config as cfg
+import src.config as cfg
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 

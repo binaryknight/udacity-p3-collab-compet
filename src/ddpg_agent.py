@@ -9,7 +9,7 @@ import torch
 import torch.optim as optim
 
 # Get the configuration parameters
-import config as cfg
+import src.config as cfg
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
