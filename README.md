@@ -3,11 +3,12 @@
 
 ### Introduction
 
-For this project, the [Reacher](https://github.com/Unity-Technologies/ml-agents/blob/master/docs/Learning-Environment-Examples.md#reacher) environment is used to train the agent. In this environment, a double-jointed arm moves to target locations. the agent is trained so that the arm follows a desired trajectory.
+For this project, the [Tennis](https://github.com/Unity-Technologies/ml-agents/blob/master/docs/Learning-Environment-Examples.md#tennis) environment. There are 2 agents (racquets) in this environment and the goal is to make them pass the ball among each other over the net as long as possible.
 
 #### Reward
-A reward of +0.1 is provided for each time step that the agent's hand is in the goal location.
-
+- Each agent receives a reward of 0.1 if it hits the ball correctly across the net and withing the playing area.
+- Each agent receives a reward  of -0.01 if it drops the ball to the ground or hits it out of bounds.
+- The overall training objective is to train the agents so that the maximum of the sum of the rewards fo each agent after each game (episode) averaged over 100 games is greater than 0.5.
 #### States
 The observation space consists of 33 variables corresponding to position, rotation, velocity, and angular velocities of the arm. 
 
@@ -75,7 +76,7 @@ Follow the instructions below to set up your python environment to run the code 
 4. The repo contains the zip files for the Mac OSX operating system.
 
 ### Instructions
-Run the `Continuous_Control_Submission.ipynb` notebook to get started.  
+Run the `Collab_Compet_Submission.ipynb` notebook to get started.  
 1. Navigate to the root directory of this repo. 
 2. Start the Jupyter Notebook in the activated `drlnd` conda environment
    - ```bash
