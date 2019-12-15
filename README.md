@@ -1,24 +1,19 @@
 
-# Project 3: 
+# Project 3: Collaboration and Competition
 
 ### Introduction
 
-For this project, the [Reacher](https://github.com/Unity-Technologies/ml-agents/blob/master/docs/Learning-Environment-Examples.md#reacher) environment is used to train the agent. In this environment, a double-jointed arm moves to target locations. the agent is trained so that the arm follows a desired trajectory.
+For this project, the [Tennis](https://github.com/Unity-Technologies/ml-agents/blob/master/docs/Learning-Environment-Examples.md#tennis) environment. There are 2 agents (racquets) in this environment and the goal is to make them pass the ball among each other over the net as long as possible.
 
 #### Reward
-A reward of +0.1 is provided for each time step that the agent's hand is in the goal location.
-
+- Each agent receives a reward of 0.1 if it hits the ball correctly across the net and withing the playing area.
+- Each agent receives a reward  of -0.01 if it drops the ball to the ground or hits it out of bounds.
 #### States
-The observation space consists of 33 variables corresponding to position, rotation, velocity, and angular velocities of the arm. 
+- The agents and the ball's states are described by a vector of 8 elements corresponding to to position and velocities.
+- Each agent receives an observation of 24 elements (state of itself, state of the ball and state of the other agent)
 
 #### Actions
-Each action is a vector with four numbers, corresponding to torque applicable to two joints. Every entry in the action vector is a number between -1 and 1.
-
-#### Number of Arms in the Environment 
-
-The code in this repo solves two separate versions of the Unity environment. 
-- The first version contains a single arm.
-- The second version contains 20 identical arms, each with its own copy of the environment. In this version, multiple arms are used to collect feedback in parallel. This version is useful for algorithms like [PPO](https://arxiv.org/pdf/1707.06347.pdf), [A3C](https://arxiv.org/pdf/1602.01783.pdf), and [D4PG](https://openreview.net/pdf?id=SyZipzbCb) that use multiple (non-interacting, parallel) copies of the same agent.  
+- Each action is a vector with 2 numbers, corresponding to movement toward net or away from net, and jumping.
 
 ### Success criteria for Training
 
@@ -75,7 +70,7 @@ Follow the instructions below to set up your python environment to run the code 
 4. The repo contains the zip files for the Mac OSX operating system.
 
 ### Instructions
-Run the `Continuous_Control_Submission.ipynb` notebook to get started.  
+Run the `Collab_Compet_Submission.ipynb` notebook to get started.  
 1. Navigate to the root directory of this repo. 
 2. Start the Jupyter Notebook in the activated `drlnd` conda environment
    - ```bash
