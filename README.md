@@ -3,24 +3,26 @@
 
 ### Introduction
 
-For this project, the [Tennis](https://github.com/Unity-Technologies/ml-agents/blob/master/docs/Learning-Environment-Examples.md#tennis) environment. There are 2 agents (racquets) in this environment and the goal is to make them pass the ball among them over the net as long as possible.
+For this project, the [Tennis](https://github.com/Unity-Technologies/ml-agents/blob/master/docs/Learning-Environment-Examples.md#tennis) environment is used. There are 2 agents (racquets) in this environment and the goal is to make them pass the ball among them over the net as long as possible.
 
-The task is episodic and ends if the ball is hit out of bounds or the ball hits the ground or the time runs out. 
+The task is episodic. The task ends when the ball is hit out of bounds or when the ball falls to the ground or when the maximum play time is reached. 
 
 #### Reward
-- Each agent receives a reward of 0.1 if it hits the ball correctly across the net and withing the playing area.
-- Each agent receives a reward  of -0.01 if it drops the ball to the ground or hits it out of bounds.
+- An agent receives a reward of 0.1 when it hits the ball correctly across the net and within the playing area.
+- An agent receives a reward  of -0.01 when it drops the ball to the ground or hits it out of bounds.
+
 #### States
-- The agents and the ball's states are described by a vector of 8 elements corresponding to to position and velocities.
+- The state of an agent is described by a vector of 8 elements corresponding to the position and velocity of the  agent.
+- The state of the ball is described by a vector of 8 elements corresponding to the position and velocity of the ball.
 - Each agent receives an observation of 24 elements (state of itself, state of the ball and state of the other agent)
 
 #### Actions
 - Each action is a vector with 2 numbers, corresponding to movement toward net or away from net, and jumping.
+- Each action takes values between -1.0 and 1.0. 
 
 ### Success criteria for Training
 - After after episode (game), the cumulative reward for each agent is determined. The maximum of the cumulative rewards of the agents for an episode averaged over the most recent 100 episodes needs to be higher than 0.5 for the training to be successful.
  
-
 ### Setting Up the Python Environment
 Follow the instructions below to set up your python environment to run the code in this repository, 
 1. Create (and activate) a new environment with Python 3.6.
