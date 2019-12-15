@@ -18,7 +18,7 @@ from src.maddpg_agent import MAgent
 def train(
     env,
     max_sim_time=10000,
-    min_performance=1.0,
+    min_performance=2.0,
     num_episodes=10,
     window_size=100,
     actor_local_save_filenames=[
@@ -116,7 +116,8 @@ def train(
 
         states = env_info.vector_observations
         tstart = time.time()
-        for sim_t in range(max_sim_time):
+        sim_t = 0
+        while True:
             print("""Simulation time: {}""".format(str(sim_t)), end="\r")
             # select an action for each agent
             action = agent.act(states, add_noise=True)
@@ -137,6 +138,7 @@ def train(
             # roll over the state to next time step
             states = next_states
             # exit loop if episode finished
+            sim_t += 1
             if np.any(dones):
                 break
         ttotal = time.time() - tstart
@@ -227,7 +229,7 @@ def run(
         env_info = env.reset(train_mode=False)[brain_name]
         # get the current state
         states = env_info.vector_observations
-        for t in range(sim_max_time):
+        while True:
             # select an action
             action = agent.act(states, add_noise=False)
             # send the action to the environment

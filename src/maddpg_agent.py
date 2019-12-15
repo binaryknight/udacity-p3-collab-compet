@@ -148,7 +148,9 @@ class MAgent:
         Q_targets = rewards + (gamma * Q_targets_next * (1 - dones))
         # Compute critic loss
         Q_expected = train_agent.critic_local(obs, obs_actions)
-        critic_loss = F.mse_loss(Q_expected, Q_targets)
+        # critic_loss = F.mse_loss(Q_expected, Q_targets)
+        huber_loss = torch.nn.SmoothL1Loss()
+        critic_loss = huber_loss(Q_expected, Q_targets.detach())
         # Minimize the loss
         train_agent.critic_optimizer.zero_grad()
         critic_loss.backward()
