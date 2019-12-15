@@ -50,8 +50,12 @@ class Agent:
         self.seed = random.seed(random_seed)
 
         # Actor Network (w/ Target Network)
-        self.actor_local = Actor(state_size, action_size, random_seed).to(device)
-        self.actor_target = Actor(state_size, action_size, random_seed).to(device)
+        self.actor_local = Actor(state_size, action_size, random_seed).to(
+            device
+        )
+        self.actor_target = Actor(state_size, action_size, random_seed).to(
+            device
+        )
         self.actor_optimizer = optim.Adam(
             self.actor_local.parameters(), lr=cfg.LR_ACTOR
         )
@@ -80,7 +84,9 @@ class Agent:
         self.noise = OUNoise(action_size, random_seed)
 
         # Replay memory
-        self.memory = ReplayBuffer(cfg.BUFFER_SIZE, cfg.BATCH_SIZE, random_seed)
+        self.memory = ReplayBuffer(
+            cfg.BUFFER_SIZE, cfg.BATCH_SIZE, random_seed
+        )
         self.t_step = 0
         self.epsilon = cfg.EPSILON
         self.epsilon_decay = cfg.EPSILON_DECAY
@@ -133,7 +139,9 @@ class Agent:
         torch.save(self.actor_local.state_dict(), actor_local_save_filename)
         torch.save(self.actor_target.state_dict(), actor_target_save_filename)
         torch.save(self.critic_local.state_dict(), critic_local_save_filename)
-        torch.save(self.critic_target.state_dict(), critic_target_save_filename)
+        torch.save(
+            self.critic_target.state_dict(), critic_target_save_filename
+        )
 
     def load(
         self,
@@ -143,13 +151,21 @@ class Agent:
         critic_target_load_filename=None,
     ):
         if actor_local_load_filename is not None:
-            self.actor_local.load_state_dict(torch.load(actor_local_load_filename))
+            self.actor_local.load_state_dict(
+                torch.load(actor_local_load_filename)
+            )
         if actor_target_load_filename is not None:
-            self.actor_target.load_state_dict(torch.load(actor_target_load_filename))
+            self.actor_target.load_state_dict(
+                torch.load(actor_target_load_filename)
+            )
         if critic_local_load_filename is not None:
-            self.critic_local.load_state_dict(torch.load(critic_local_load_filename))
+            self.critic_local.load_state_dict(
+                torch.load(critic_local_load_filename)
+            )
         if critic_target_load_filename is not None:
-            self.critic_target.load_state_dict(torch.load(critic_target_load_filename))
+            self.critic_target.load_state_dict(
+                torch.load(critic_target_load_filename)
+            )
 
 
 class OUNoise:
@@ -233,7 +249,9 @@ class ReplayBuffer:
         experiences = random.sample(self.memory, k=self.batch_size)
 
         states = (
-            torch.from_numpy(np.vstack([e.state for e in experiences if e is not None]))
+            torch.from_numpy(
+                np.vstack([e.state for e in experiences if e is not None])
+            )
             .float()
             .to(device)
         )
@@ -260,30 +278,36 @@ class ReplayBuffer:
         )
         observations = (
             torch.from_numpy(
-                np.vstack([e.observations for e in experiences if e is not None])
+                np.vstack(
+                    [e.observations for e in experiences if e is not None]
+                )
             )
             .float()
             .to(device)
         )
         observed_actions = (
             torch.from_numpy(
-                np.vstack([e.observed_actions for e in experiences if e is not None])
+                np.vstack(
+                    [e.observed_actions for e in experiences if e is not None]
+                )
             )
             .float()
             .to(device)
         )
         next_observations = (
             torch.from_numpy(
-                np.vstack([e.next_observations for e in experiences if e is not None])
+                np.vstack(
+                    [e.next_observations for e in experiences if e is not None]
+                )
             )
             .float()
             .to(device)
         )
         dones = (
             torch.from_numpy(
-                np.vstack([e.done for e in experiences if e is not None]).astype(
-                    np.uint8
-                )
+                np.vstack(
+                    [e.done for e in experiences if e is not None]
+                ).astype(np.uint8)
             )
             .float()
             .to(device)
