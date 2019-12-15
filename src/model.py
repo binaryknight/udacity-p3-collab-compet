@@ -1,5 +1,4 @@
 import numpy as np
-import pdb
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -15,7 +14,13 @@ class Actor(nn.Module):
     """Actor (Policy) Model."""
 
     def __init__(
-        self, state_size, action_size, seed, fc1_units=512, fc2_units=512, fc3_units=256
+        self,
+        state_size,
+        action_size,
+        seed,
+        fc1_units=512,
+        fc2_units=512,
+        fc3_units=256,
     ):
         """Initialize parameters and build model.
         Params
