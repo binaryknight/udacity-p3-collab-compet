@@ -5,7 +5,7 @@
 
 For this project, the [Tennis](https://github.com/Unity-Technologies/ml-agents/blob/master/docs/Learning-Environment-Examples.md#tennis) environment is used. There are 2 agents (racquets) in this environment and the goal is to make them pass the ball among them over the net as long as possible.
 
-The task is episodic. The task ends when the ball is hit out of bounds or when the ball falls to the ground or when the maximum play time is reached. 
+The task is episodic. The task ends when the ball is hit out of bounds or when the ball falls to the ground or maximum play time (1000 s) is reached. 
 
 #### Reward
 - An agent receives a reward of 0.1 when it hits the ball correctly across the net and within the playing area.
