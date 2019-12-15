@@ -17,11 +17,11 @@ The task is episodic. The task ends when the ball is hit out of bounds or when t
 - Each agent receives an observation of 24 elements (state of itself, state of the ball and state of the other agent)
 
 #### Actions
-- Each action is a vector with 2 numbers, corresponding to movement toward net or away from net, and jumping.
-- Each action takes values between -1.0 and 1.0. 
+- Each action is a vector of 2 elements, corresponding to movement toward net or away from net, and jumping.
+- Each action element takes values between -1.0 and 1.0. 
 
 ### Success criteria for Training
-- After after episode (game), the cumulative reward for each agent is determined. The maximum of the cumulative rewards of the agents for an episode averaged over the most recent 100 episodes needs to be higher than 0.5 for the training to be successful.
+- After each episode (game), the cumulative reward for each agent is determined. The maximum of the cumulative rewards of the agents for an episode averaged over the most recent 100 episodes needs to be higher than 0.5 for the training to be successful.
  
 ### Setting Up the Python Environment
 Follow the instructions below to set up your python environment to run the code in this repository, 
