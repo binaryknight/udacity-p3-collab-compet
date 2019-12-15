@@ -18,7 +18,7 @@ from src.maddpg_agent import MAgent
 def train(
     env,
     max_sim_time=10000,
-    min_performance=2.0,
+    min_performance=1.0,
     num_episodes=10,
     window_size=100,
     actor_local_save_filenames=[
@@ -161,11 +161,15 @@ def train(
                 ),
                 end="",
             )
-            print("""ma_max_score:{:.2f}""".format(float(max_moving_score)))
+            print("""ma_max_score: {: .2f}""".format(float(max_moving_score)))
 
         if max_moving_score >= min_performance and (e + 1) > window_size:
-            print("\nEnvironment solved in {:d} episodes!".format((e + 1)))
-            print("\tMoving Average Max Score: {:.2f}".format(float(max_moving_score)))
+            print(
+                "\nEnvironment solved in {:d} episodes!".format((e + 1)),
+                end="",
+            )
+            val = float(max_moving_score)
+            print("\tMoving Average Max Score: {:.2f}".format(val))
             break
 
     agent.save(
@@ -195,12 +199,12 @@ def run(
 ):
     """
         Params
-        ======
-            env : Unity environment
-            num_episodes(int)           : number of episodes to use
+        == == ==
+            env: Unity environment
+            num_episodes(int): number of episodes to use
                                           to evaluate the agent
-            sim_max_time                : maximum time steps in an episode
-            actore_local_load_filenames : the file that contains
+            sim_max_time: maximum time steps in an episode
+            actore_local_load_filenames: the file that contains
                                           the weights of the actor NNs
                                           for the agents
         """
@@ -217,7 +221,11 @@ def run(
     state_size = states.shape[1]
     # Create tHe agent with the trained weights
     agent = MAgent(
-        state_size, action_size, num_agents, random_seed, actor_local_load_filenames,
+        state_size,
+        action_size,
+        num_agents,
+        random_seed,
+        actor_local_load_filenames,
     )
 
     # Create the scores storage
@@ -274,5 +282,5 @@ def main():
     scores = run(env, num_episodes=10)
     print("Done simulating")
     for idx, score in enumerate(scores):
-        print("""Episode:{}, scores:{}""".format(idx, score))
+        print("""Episode: {}, scores: {}""".format(idx, score))
     env.close()
