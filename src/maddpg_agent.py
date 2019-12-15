@@ -3,7 +3,6 @@ import random
 from src.ddpg_agent import Agent
 
 import torch
-import torch.nn.functional as F
 
 import src.config as cfg
 
@@ -133,7 +132,9 @@ class MAgent:
         observations_list = []
 
         for idx, agent in enumerate(self.agents):
-            x = np.arange(idx, (cfg.BATCH_SIZE * self.num_agents), self.num_agents)
+            x = np.arange(
+                idx, (cfg.BATCH_SIZE * self.num_agents), self.num_agents
+            )
             actions_next_list.append(agent.actor_target(next_observations[x]))
             observed_actions_list.append(observed_actions[x])
             observations_next_list.append(next_observations[x])
@@ -148,20 +149,23 @@ class MAgent:
         Q_targets = rewards + (gamma * Q_targets_next * (1 - dones))
         # Compute critic loss
         Q_expected = train_agent.critic_local(obs, obs_actions)
-        # critic_loss = F.mse_loss(Q_expected, Q_targets)
         huber_loss = torch.nn.SmoothL1Loss()
         critic_loss = huber_loss(Q_expected, Q_targets.detach())
         # Minimize the loss
         train_agent.critic_optimizer.zero_grad()
         critic_loss.backward()
-        torch.nn.utils.clip_grad_norm_(train_agent.critic_local.parameters(), 1)
+        torch.nn.utils.clip_grad_norm_(
+            train_agent.critic_local.parameters(), 1
+        )
         train_agent.critic_optimizer.step()
 
         # ---------------------------- update actor --------------------------#
         # Compute actor loss
         actions_pred_list = []
         for idx, agent in enumerate(self.agents):
-            x = np.arange(idx, (cfg.BATCH_SIZE * self.num_agents), self.num_agents)
+            x = np.arange(
+                idx, (cfg.BATCH_SIZE * self.num_agents), self.num_agents
+            )
             actions_pred_list.append(agent.actor_local(observations[x]))
 
         actions_pred = torch.cat(actions_pred_list, dim=1)
